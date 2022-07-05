@@ -41,7 +41,7 @@ namespace CacheLib.Provider
         /// <param name="key">Cache Key</param>
         /// <param name="flags">CommandFlags</param>
         /// <returns></returns>
-        T? Get<T>(string key, CommandFlags flags = CommandFlags.None) where T: class;
+        T? Get<T>(string key, CommandFlags flags = CommandFlags.None) where T : class;
 
         /// <summary>
         /// Get data via key. If data doesn't exist the special value nil will be returned.
@@ -111,7 +111,7 @@ namespace CacheLib.Provider
         /// <param name="expireTime"></param>
         /// <returns>Result</returns>
         long IncrBy(string key, long increaseVal, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null);
-    
+
         /// <summary>
         /// Get Key List
         /// </summary>
@@ -151,5 +151,28 @@ namespace CacheLib.Provider
         /// <param name="batchSize"></param>
         /// <returns></returns>
         int StringBatchSet<T>(List<KeyValuePair<string, T>> cacheKeysValue, int batchSize = 10, TimeSpan? expireTime = null) where T : class;
+
+
+        /// <summary>
+        /// Use transation scope when set variable
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="Value"></param>
+        /// <param name="flags"></param>
+        /// <param name="expireTime"></param>
+        /// <returns></returns>
+        Task<bool> SetByTransationAsync<T>(string key, T Value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null) where T : class;
+
+        /// <summary>
+        /// Use transation scope when set variable asynchronously
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="flags"></param>
+        /// <param name="expireTime"></param>
+        /// <returns></returns>
+        Task<bool> SetByTransationAsync(string key, string? value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null);
     }
 }

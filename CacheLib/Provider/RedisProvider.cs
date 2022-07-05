@@ -443,6 +443,70 @@ namespace CacheLib.Provider
         }
 
         /// <summary>
+        /// Use transation scope when set variable asynchronously
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="flags"></param>
+        /// <param name="expireTime"></param>
+        /// <returns></returns>
+        public async Task<bool> SetByTransationAsync(string key, string? value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null)
+        {
+            bool result = false;
+
+            Func<Task<bool>> job = new Func<Task<bool>>(async () => {
+                
+                var tran = this._database.CreateTransaction();
+
+                var expire = expireTime ?? this._defaultExpireTime;
+                var stringSetTask = tran.StringSetAsync(key, value);
+                tran.AddCondition(Condition.KeyNotExists(key));
+                bool committed = await tran.ExecuteAsync();
+
+                if (committed)
+                {
+                    await stringSetTask;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            });
+
+            switch (this._lockWay)
+            {
+                case LockWayEnum.RedLock:
+                    result = await this._lockFactory.DoJobWithRedLockAsync<bool>(job);
+                    break;
+                case LockWayEnum.RedisLock:
+                    Guid redisKey = Guid.NewGuid();
+                    result = await this._lockFactory.DoJobWithRedisLockAsync<bool>(redisKey.ToString(), job, this._defaultLockExpireTime, this._database);
+                    break;
+                default:
+                    result = await job.Invoke();
+                    break;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Use transation scope when set variable asynchronously
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="flags"></param>
+        /// <param name="expireTime"></param>
+        /// <returns></returns>
+        public async Task<bool> SetByTransationAsync<T>(string key, T? value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null) where T : class
+        {
+            return await this.SetByTransationAsync(key, JsonConvert.SerializeObject(value), flags, expireTime);
+        }
+
+        /// <summary>
         /// Run the lua script and no return.
         /// </summary>
         /// <param name="luaScript"></param>

@@ -187,5 +187,20 @@ namespace CacheLib.Service
         {
             return this._cacheProvider.StringBatchSet(cacheKeysValue, batchSize);
         }
+
+        /// <summary>
+        /// Use transation scope when set variable
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="Value"></param>
+        /// <param name="flags"></param>
+        /// <param name="expireTime"></param>
+        /// <returns></returns>
+        public async Task<bool> SetByTransationAsync<T>(string key, T Value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null) where T : class
+        {
+            var result = await this._cacheProvider.SetByTransationAsync<T>(key, Value, flags, expireTime);
+            return result;
+        }
     }
 }

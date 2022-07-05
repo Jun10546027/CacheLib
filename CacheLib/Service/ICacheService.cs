@@ -82,5 +82,16 @@ namespace CacheLib.Service
         /// <param name="batchSize"></param>
         /// <returns></returns>
         int StringBatchSet<T>(List<KeyValuePair<string, T>> cacheKeysValue, int batchSize = 1) where T : class;
+
+        /// <summary>
+        /// Use transation scope when set variable
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="Value"></param>
+        /// <param name="flags"></param>
+        /// <param name="expireTime"></param>
+        /// <returns></returns>
+        Task<bool> SetByTransationAsync<T>(string key, T Value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null) where T : class;
     }
 }

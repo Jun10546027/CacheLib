@@ -82,6 +82,28 @@ namespace CacheLib.Factory
         }
 
         /// <summary>
+        /// Do job asynchronously with Redlock
+        /// </summary>
+        /// <param name="job"></param>
+        /// <returns></returns>
+        public async Task<T?> DoJobWithRedLockAsync<T>(Func<Task<T>> job)
+        {
+            T? result = default(T);
+            var key = $"{Environment.MachineName}-{Process.GetCurrentProcess().Id}";
+            var expiry = TimeSpan.FromSeconds(30);
+
+            using (var redLock = GetRedLock().CreateLockAsync(key, expiry).Result)
+            {
+                if (redLock.IsAcquired)
+                {
+                    result = await job.Invoke();
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Do job with Redislock
         /// </summary>
         /// <param name="key"></param>
@@ -100,6 +122,35 @@ namespace CacheLib.Factory
                 try
                 {
                     result = job.Invoke();
+                }
+                finally
+                {
+                    database.LockRelease(key, token);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Do job asynchronously with Redislock
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="job"></param>
+        /// <param name="lockExpireTime"></param>
+        /// <param name="database"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public async Task<T?> DoJobWithRedisLockAsync<T>(string key, Func<Task<T>> job, TimeSpan lockExpireTime, IDatabase database, CommandFlags flags = CommandFlags.None)
+        {
+            T? result = default(T);
+            RedisValue token = $"{Environment.MachineName}-{Process.GetCurrentProcess().Id}";
+
+            if (database.LockTake(key, token, lockExpireTime, flags))
+            {
+                try
+                {
+                    result = await job.Invoke();
                 }
                 finally
                 {

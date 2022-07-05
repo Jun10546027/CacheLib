@@ -130,5 +130,15 @@ namespace CacheLib.Provider
         {
             throw new NotImplementedException();
         }
+
+        public Task<bool> SetByTransationAsync<T>(string key, T Value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> SetByTransationAsync(string key, string? value, CommandFlags flags = CommandFlags.None, TimeSpan? expireTime = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
