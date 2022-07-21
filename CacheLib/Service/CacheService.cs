@@ -45,7 +45,7 @@ namespace CacheLib.Service
         {
             this._cacheProvider = provider;
             this._defaultLockTime = TimeSpan.FromSeconds(defaultLockTime);
-            this._defaultLockTime = TimeSpan.FromSeconds(defaultExpireTime);
+            this._defaultExpireTime = TimeSpan.FromSeconds(defaultExpireTime);
         }
 
         /// <summary>
